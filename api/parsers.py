@@ -70,17 +70,23 @@ class FunPayParser:
     def parse_profile(html_content: str):
         soup = BeautifulSoup(html_content, 'html.parser')
         offer_list = soup.find_all('div', class_='offer')
-        category_ids = []
+        category_ids = set()
+        lots = []
         for offer in offer_list:
-            link_tag = offer.find('a', href=True)
-            if link_tag:
-                href = link_tag['href']
-                parts = href.strip('/').split('/')
-                if 'lots' in parts:
-                    node_id = parts[-1]
-                    category_ids.append(node_id)
-        return list(set(category_ids))
-
+            links = offer.find_all('a', href=True)
+            for link in links:
+                href = link['href']
+                if '/lots/' in href and 'id=' not in href:
+                    cat_id = href.strip('/').split('/')[-1]
+                    if cat_id.isdigit():
+                        category_ids.add(cat_id)
+                if 'id=' in href:
+                    lot_id = href.split('id=')[-1].split('&')[0]
+                    name_tag = link.find('div', class_='tc-desc-text')
+                    name = name_tag.get_text(strip=True) if name_tag else "Unknown"
+                    lots.append({'name': name, 'id': lot_id})
+        return {'category-ids': list(category_ids), 'lots': lots}
+        
     @staticmethod
     def parse_lot_menu(html_content: str):
         soup = BeautifulSoup(html_content, 'html.parser')

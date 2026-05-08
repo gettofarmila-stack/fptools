@@ -1,6 +1,7 @@
 
 from bs4 import BeautifulSoup
 from models.chat import ChatData
+from models.account import LotInfo, Profile, UserData
 from api.client import FunPayClient
 from api.parsers import FunPayParser
 from utils.errors import MessageNotDelivered, RaisingLotError
@@ -77,18 +78,21 @@ class Account:
 
     async def profile(self, user_id=None):
         '''
-        Function gets user lots  
+        Function gets user info  
         Takes user_id, nullable  
         If user_id is null, the value will be your session user_id  
+        Returns object with category_ids, lots[{lot['name']: lot['id']}]
         https://funpay.com/users/{user_id}/  
         '''
         target_id = user_id or self.user_id
         if not target_id:
-            target_id = await self.get_user_data()
+            target = await self.get_user_data()
+            target_id = target.user_id
         html = await self.client.get_user_profile(target_id)
         data = self.parser.parse_profile(html)
-        return data
-        #todo: добавить парсинг всех лотов, сбор их в обьект со словарём айди лота:название для смены цен, быстрого снятия лотов, деактивации лотов и тд
+        lots_list = [LotInfo(name=lot['name'], id=lot['id']) for lot in data['lots']]
+        profile = Profile(category_ids=data['category-ids'], lots=lots_list)
+        return profile
 
     async def get_game_id(self, category_id):
         '''
@@ -105,7 +109,10 @@ class Account:
         if not self.csrf_token:
             await self.get_user_data()
         try:
-            category_list = await self.profile()
+            profile = await self.profile()
+            category_list = profile.category_ids
+            if not category_list:
+                raise NullData('I cant raise none')
             response = []
             for node_id in category_list:
                 game_id = await self.get_game_id(node_id)
@@ -124,4 +131,5 @@ class Account:
         data = self.parser.parse_main_menu(html)
         self.user_id = data['user-id']
         self.csrf_token = data['csrf-token']
-        return data
+        user_data = UserData(csrf_token=data['csrf-token'], user_id=data['user-id'])
+        return user_data
