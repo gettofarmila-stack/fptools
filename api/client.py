@@ -68,3 +68,6 @@ class FunPayClient:
         else:
             return {"error": "not_json", "status": r.status_code}
             
+    async def get_lot_info(self, lot_id):
+        r = await self.client.get(f'/lots/offer?id={lot_id}')
+        return r.text

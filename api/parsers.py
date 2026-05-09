@@ -117,3 +117,26 @@ class FunPayParser:
         result['csrf-token'] = app_data.get('csrf-token', '')
         return result
         
+    @staticmethod
+    def parse_current_lot_menu(html_content):
+        result = {}
+        soup = BeautifulSoup(html_content, 'html.parser')
+        param_items = soup.find_all('div', class_='param-item')
+        descriptions = {}
+        for item in param_items:
+            header = item.find('h5').get_text(strip=True)
+            text = item.find('div').get_text(separator='\n', strip=True)
+            descriptions[header] = text
+        result['short_desc'] = descriptions.get('Краткое описание')
+        result['description'] = descriptions.get('Подробное описание')
+        sbp_option = soup.find('option', value='21')
+        if sbp_option:
+            inner_html = sbp_option.get('data-content')
+            if inner_html:
+                inner_soup = BeautifulSoup(inner_html, 'html.parser')
+                price_span = inner_soup.find('span', class_='payment-value')
+                if price_span:
+                    raw_price = price_span.get_text(strip=True)
+                    result['price'] = raw_price.replace('₽', '').replace('\xa0', '').replace(' ', '').strip()
+                    return result
+        raise NullData('Parse current lot menu dont have needed data')

@@ -2,6 +2,7 @@
 from bs4 import BeautifulSoup
 from models.chat import ChatData
 from models.account import LotInfo, Profile, UserData
+from models.lots import CurrentLotInfo
 from api.client import FunPayClient
 from api.parsers import FunPayParser
 from utils.errors import MessageNotDelivered, RaisingLotError
@@ -133,3 +134,26 @@ class Account:
         self.csrf_token = data['csrf-token']
         user_data = UserData(csrf_token=data['csrf-token'], user_id=data['user-id'])
         return user_data
+
+    async def change_lot_price(self, lot_id, new_price):
+        pass
+
+    async def get_lot_info(self, lot_id):
+        '''
+        Func gets lot data:  
+        short_desc: str  
+        description: str  
+        price: float  
+        '''
+        html = await self.client.get_lot_info(lot_id)
+        data = self.parser.parse_current_lot_menu(html)
+        lot = CurrentLotInfo(
+            short_desc=data['short_desc'],
+            description=data['description'],
+            price=float(data['price'])
+        )
+        return lot
+    
+    async def refund_order(self, order_id):
+        pass
+
