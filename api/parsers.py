@@ -7,7 +7,6 @@ from models.account import Balance
 from utils.errors import NullData, ParseException
 
 class FunPayParser:
-
     @staticmethod
     def parse_chats_list(html_content: str) -> list[Chat]:
         soup = BeautifulSoup(html_content, 'html.parser')
@@ -169,4 +168,12 @@ class FunPayParser:
         except AttributeError:
             result['status'] = 'Ошибка'
             return result
+        return result
+
+    @staticmethod
+    def parse_edit_lot_page(html_content):
+        soup = BeautifulSoup(html_content, 'html.parser')
+        result = {}
+        hidden_inputs = soup.find_all('input', type='hidden')
+        result = {tag.get('name'): tag.get('value') for tag in hidden_inputs if tag.get('name')}
         return result

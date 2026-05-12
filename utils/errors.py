@@ -11,15 +11,19 @@ class ParseException(Exception):
         super().__init__(self.message)
 
 class NullData(ParseException):
+    '''Data is null'''
     message = 'Null Data'
 
 class MessageNotDelivered(AccountError):
+    '''Not delivered message error'''
     message = 'Message is not delivered'
 
 class RaisingLotError(AccountError):
+    '''Error by raising lots'''
     message = 'Raising lot error'
 
 class FunPayRefundError(AccountError):
+    '''Error by refunding order'''
     message = 'Refunding error'
 
 class RequestError(AccountError):
