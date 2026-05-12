@@ -92,3 +92,21 @@ class FunPayClient:
     async def get_lot_editor_data(self, lot_id):
         r = await self.client.get(f'/lots/offerEdit?offer={lot_id}')
         return r.text
+
+    async def edit_lot(self, lot, active=None):
+        payload = {
+            'csrf_token': lot.csrf_token,
+            'form_created_at': lot.form_created_at,
+            'offer_id': lot.offer_id,
+            'node_id': lot.node_id,
+            'location': lot.location,
+            'deleted': lot.deleted,
+#            'secrets': lot.secrets,
+#            'price': lot.price,
+#            'amount': lot.amount
+        }
+        payload.update(lot.fields)
+        if active:
+            payload['active'] = 'on'
+        r = await self.client.post('/lots/offerSave', data=payload)
+        return r

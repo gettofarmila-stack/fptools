@@ -29,3 +29,7 @@ class FunPayRefundError(AccountError):
 class RequestError(AccountError):
     """Error by get and parsing response"""
     pass
+
+class LotEditingError(AccountError):
+    '''Error by editing lot'''
+    message = 'Editing error'

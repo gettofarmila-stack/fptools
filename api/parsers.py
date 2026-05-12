@@ -186,4 +186,15 @@ class FunPayParser:
             else:
                 first_opt = s.find('option')
                 result[name] = first_opt.get('value', '') if first_opt else ''
+        inputs = soup.find_all('input', class_='form-control')
+        for i in inputs:
+            name = i.get('name')
+            value = i.get('value', '')
+            if value:
+                result[name] = value
+        textareas = soup.find_all('textarea')
+        for t in textareas:
+            name = t.get('name')
+            if name:
+                result[name] = t.string if t.string else ''
         return result
