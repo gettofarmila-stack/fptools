@@ -6,42 +6,60 @@ class ChatManager:
         self.account = account
 
     async def get_chats(self):
-        '''
+        """
+        Собирает все чаты на аккаунте.
 
-        The function calls the chats in account, returns an object with values:  
-            id: str, Chat id (node)  
-            username: str, Client nickname  
-            last_msg: str, Last message in chat  
-            date: str, last message date  
-            link: str, full chat link (https://funpay.com/chat/?node=id)  
-            is_unread: bool, Readed or not  
-          
-        '''
+        Returns:
+            list: Список объектов чатов. Каждый содержит:   
+                - id (str): ID чата (node_id).  
+                - username (str): Имя клиента.  
+                - last_msg (str): Последнее сообщение в чате.   
+                - date (str): Дата последнего сообщения.    
+                - link (str): Полная ссылка на чат. 
+                - is_unread (bool): Прочитано или нет (True, если не прочитано).    
+
+        """
         html = await self.account.client.get_chats_page()
         chats = self.account.parser.parse_chats_list(html)
-        for chat in chats:
-            if chat.id not in self.account.last_msg_ids:
-                self.account.last_msg_ids[chat.id] = chat.node_msg_id
         return chats
 
     async def send_message(self, chat_id:str, text:str):
-        '''
-        The function takes chat_id, text.  
-        Sends a message to the given chat, on success it returns 'succes', on error it returns the error MessageNotDelivered
-        '''
+        """
+        Отправляет сообщение.  
+
+        Args:
+            chat_id (str): ID чата  
+            text (str): Текст сообщения 
+
+        Returns:
+            bool: True, если сообщение отправлено   
+
+        Raises:
+            MessageNotDelivered: Если не удалось отправить сообщение.   
+        
+        """
         if chat_id not in self.account.node_names or not self.account.csrf_token:
             await self.get_chat_data(chat_id)
         response = await self.account.client.send_message_request(self.account.node_names[chat_id], -1, text, self.account.csrf_token)
         inner_response = response.get('response', {})
         if inner_response.get('error') is None:
-            return 'success'
+            return True
         else:
             error_msg = inner_response.get('error', 'Unknown error')
             raise MessageNotDelivered(f'Server returned a error: {error_msg}')
 
     async def get_chat_data(self, chat_id):
         '''
-        https://funpay.com/chat/?node={chat_id}
+        Получает данные чата.
+
+        Args:
+            chat_id (int | str): Айди чата
+
+        Returns:
+            ChatData: Объект с тех. данными чата:   
+                - node_name (str): Полный ID переписки, нужный для отправки сообщения (users-8778502-19903068)  
+                - csrf_token (str): Нужен для post запросов, сохраняется в кеш self.account.csrf_token  
+                - user_id (str): твой ID    
         '''
         html = await self.account.client.get_current_chat(chat_id)
         data = self.account.parser.parse_chat(html)

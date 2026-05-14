@@ -37,24 +37,28 @@ class Runner:
                 raise CriticalRunnerError(message=str(e))
 
     def message_handler(self):
+        '''Декоратор возвращает новые сообщения'''
         def decorator(func):
             self.message_handlers.append(func)
             return func
         return decorator
 
     def order_handler(self):
+        '''Декоратор возвращает все события заказов'''
         def decorator(func):
             self.order_handlers.append(func)
             return func
         return decorator
     
     def on_confirmed_handler(self):
+        '''Декоратор, который возвращает только событие заказ подтверждён'''
         def decorator(func):
             self.on_confirmed_handlers.append(func)
             return func
         return decorator
 
     def on_new_order_handler(self):
+        '''Декоратор, который возвращает только события новый заказ'''
         def decorator(func):
             self.on_new_orders_handlers.append(func)
             return func
@@ -68,6 +72,9 @@ class Runner:
         self.cache_is_updated = True
 
     async def cache_runner(self):
+        '''
+        Управляет кешем
+        '''
         if not self.cache_is_updated:
             await self.warm_up()
             return
