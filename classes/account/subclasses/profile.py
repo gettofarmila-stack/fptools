@@ -1,4 +1,4 @@
-from models.account import UserData, Order, Profile
+from models.account import UserData, Order, Profile, CurReview
 from models.lots import LotInfo
 
 
@@ -68,8 +68,13 @@ class ProfileManager:
             user_id (str | int): Можно не передавать, если None, сама узнает айди владельца сессии и запросит данные о нём. Айди юзера.
         Returns:
             Profile: Объект, с данными:  
-                - category_ids (list): Айди категорий, в которых у юзера выставлены лоты.   
-                - lots (list): Список словарей с лотами юзера юзера {lot['name']: lot['id']}.  
+                - category_ids (list): ID категорий, в которых у юзера выставлены лоты.   
+                - lots (list): Список словарей с лотами юзера юзера {lot['name']: lot['id']}.   
+                - reviews (list): Список объектов отзыва CurReview с данными:  
+                    - text (str): Текст отзыва. 
+                    - stars (int): Кол-во звёзд в отзыве (1-5). 
+                    - author (str): Автор отзыва.   
+                    - item_name (str): Название заказа, под которым оставлен отзыв. 
         '''
         target_id = user_id or self.account.user_id
         if not target_id:
@@ -78,7 +83,8 @@ class ProfileManager:
         html = await self.account.client.get_user_profile(target_id)
         data = self.account.parser.parse_profile(html)
         lots_list = [LotInfo(name=lot['name'], id=lot['id']) for lot in data['lots']]
-        profile = Profile(category_ids=data['category-ids'], lots=lots_list)
+        reviews = [CurReview(text=rev['text'], stars=rev['stars'], author=rev['author'], item_name=rev['detail']) for rev in data['reviews']]
+        profile = Profile(category_ids=data['category-ids'], lots=lots_list, reviews=reviews)
         return profile
 
     async def get_balance(self):

@@ -6,7 +6,7 @@ class LotManager:
     def __init__(self, account):
         self.account = account
 
-    async def get_lot_editor_details(self, lot_id):
+    async def _get_lot_editor_details(self, lot_id):
         '''
         Не для обычного использования! (функция для изменения лота)
         Получает данные для изменения лота с https://funpay.com/lots/offerEdit?offer={lot_id}.

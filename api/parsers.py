@@ -69,6 +69,7 @@ class FunPayParser:
     def parse_profile(html_content: str):
         soup = BeautifulSoup(html_content, 'html.parser')
         offer_list = soup.find_all('div', class_='offer')
+        review_list = soup.find_all('div', class_='review-compiled-review')
         category_ids = set()
         lots = []
         for offer in offer_list:
@@ -84,7 +85,18 @@ class FunPayParser:
                     name_tag = link.find('div', class_='tc-desc-text')
                     name = name_tag.get_text(strip=True) if name_tag else "Unknown"
                     lots.append({'name': name, 'id': lot_id})
-        return {'category-ids': list(category_ids), 'lots': lots}
+        reviews = []
+        for review in review_list:
+            rev = {}
+            rev['text'] = review.find('div', class_='review-item-text').get_text(strip=True)
+            rate_div = review.find('div', class_='rating').find('div', class_=True)
+            rating = rate_div['class'][0]
+            rev['stars'] = int(rating.replace('rating', ''))
+            rev['author'] = review.find('div', class_='media-user-name').get_text(strip=True)
+            rev['detail'] = review.find('div', class_='review-item-detail').get_text(strip=True)
+            reviews.append(rev)
+        return {'category-ids': list(category_ids), 'lots': lots, 'reviews': reviews}
+        #допиать приём в profile листа словарей reviews, сделать ему хендерл
         
     @staticmethod
     def parse_lot_menu(html_content: str):

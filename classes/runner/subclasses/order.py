@@ -5,7 +5,7 @@ class OrderRunner:
     def __init__(self, runner):
         self.runner = runner
 
-    async def update_order_cache(self):
+    async def _update_order_cache(self):
         '''
         Обновляет кеш заказов в раннере
         '''
@@ -24,7 +24,7 @@ class OrderRunner:
         self.runner.old_orders = self.runner.orders
         self.runner.orders = result
 
-    async def compare_order_cache(self):
+    async def _compare_order_cache(self):
         '''
         Сравнивает старый и новый кеш заказов
         '''

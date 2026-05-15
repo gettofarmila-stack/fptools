@@ -11,6 +11,14 @@ class Balance:
 class Profile:
     category_ids: list
     lots: list[LotInfo] = field(default_factory=list)
+    reviews: list[CurReview] = field(default_factory=list)
+
+@dataclass
+class CurReview:
+    text: str
+    stars: int
+    author: str
+    item_name: str
 
 @dataclass
 class UserData:

@@ -18,11 +18,11 @@ class FunPayEditor:
             LotEditingError: Цена не изменилась 
             RequestError: Плохое соединение с интернетом/сервер не ответил
         '''
-        lot = await self.account.lot.get_lot_editor_details(lot_id)
+        lot = await self.account.lot._get_lot_editor_details(lot_id)
         lot.fields['price'] = new_price
         response = await self.account.client.edit_lot(lot, active=True)
         if response.status_code == 200:
-            new_lot = await self.account.lot.get_lot_editor_details(lot_id)
+            new_lot = await self.account.lot._get_lot_editor_details(lot_id)
             if new_lot.fields['price'] == lot.fields['price']:
                 return True
             raise LotEditingError('Changing lot price error')
@@ -39,7 +39,7 @@ class FunPayEditor:
         Raises:
             RequestError: Сервер не ответил
         '''
-        lot = await self.account.lot.get_lot_editor_details(lot_id)
+        lot = await self.account.lot._get_lot_editor_details(lot_id)
         response = await self.account.client.edit_lot(lot)
         if response.status_code == 200:
             return True
@@ -56,7 +56,7 @@ class FunPayEditor:
         Raises:
             RequestError: Сервер не ответил
         '''
-        lot = await self.account.lot.get_lot_editor_details(lot_id)
+        lot = await self.account.lot._get_lot_editor_details(lot_id)
         response = await self.account.client.edit_lot(lot, active=True)
         if response.status_code == 200:
             return True
